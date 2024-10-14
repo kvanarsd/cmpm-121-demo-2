@@ -80,6 +80,11 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+canvas {
+  border: 2px solid black;
+  border-radius: 20px;
+  filter: drop-shadow(4px 4px 5px #000);
+}
 
 @media (prefers-color-scheme: light) {
   :root {
