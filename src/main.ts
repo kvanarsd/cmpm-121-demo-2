@@ -19,3 +19,40 @@ if(ctx) {
     ctx.fillRect(0,0, 256, 256);
 }
 app.append(canvas);
+
+// functions ----------------------------------------------------------------
+let isDrawing = false;
+let x = 0;
+let y = 0;
+
+canvas.addEventListener("mousedown", (pos) => {
+    x = pos.offsetX;
+    y = pos.offsetY;
+    isDrawing = true;
+});
+
+canvas.addEventListener("mousemove", (pos) => {
+    if (isDrawing) {
+        drawLine(ctx, x, y, pos.offsetX, pos.offsetY);
+        x = pos.offsetX;
+        y = pos.offsetY;
+    }
+});
+
+canvas.addEventListener("mouseup", (pos) => {
+    if (isDrawing) {
+        drawLine(ctx, x, y, pos.offsetX, pos.offsetY);
+        isDrawing = false;
+    }
+});
+
+
+function drawLine(context, x1, y1, x2, y2) {
+    context.beginPath();
+    context.strokeStyle = "black";
+    context.lineWidth = 1;
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.stroke();
+    context.closePath();
+}
