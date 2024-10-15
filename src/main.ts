@@ -27,27 +27,39 @@ app.append(clearBut);
 let isDrawing = false;
 let x = 0;
 let y = 0;
+const lines: { x: number; y: number; }[][] = [];
+let currentLine: { x: number; y: number; }[];
 
 canvas.addEventListener("mousedown", (pos) => {
-    x = pos.offsetX;
-    y = pos.offsetY;
     isDrawing = true;
+    currentLine = [{x:pos.offsetX, y:pos.offsetY}];
 });
 
 canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
-        drawLine(ctx, x, y, pos.offsetX, pos.offsetY);
-        x = pos.offsetX;
-        y = pos.offsetY;
+        currentLine.push({x:pos.offsetX, y:pos.offsetY});
+        lines.push([...currentLine]);
+        currentLine.shift();
+        drawAll();
     }
 });
 
 canvas.addEventListener("mouseup", (pos) => {
     if (isDrawing) {
-        drawLine(ctx, x, y, pos.offsetX, pos.offsetY);
         isDrawing = false;
+        currentLine.push({x:pos.offsetX, y:pos.offsetY});
+        lines.push([...currentLine]);
+        currentLine.shift();
+        drawAll();
+        
     }
 });
+
+function drawAll() {
+    for (const line of lines) {
+        drawLine(ctx, line[0].x, line[0].y, line[1].x, line[1].y);
+    }
+}
 
 function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
     context.beginPath();
