@@ -20,6 +20,10 @@ if(ctx) {
 }
 app.append(canvas);
 
+const clearBut = document.createElement("button");
+clearBut.innerHTML = "Clear";
+app.append(clearBut);
+
 // functions ----------------------------------------------------------------
 let isDrawing = false;
 let x = 0;
@@ -46,7 +50,6 @@ canvas.addEventListener("mouseup", (pos) => {
     }
 });
 
-
 function drawLine(context, x1, y1, x2, y2) {
     context.beginPath();
     context.strokeStyle = "black";
@@ -56,3 +59,9 @@ function drawLine(context, x1, y1, x2, y2) {
     context.stroke();
     context.closePath();
 }
+
+clearBut.addEventListener("mousedown", () => {
+    if(ctx) {
+        ctx.fillRect(0,0, 256, 256);
+    }
+});
