@@ -11,13 +11,12 @@ header.innerHTML = "Demo 2";
 app.append(header);
 
 const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
-if(ctx) {
-    ctx.canvas.width = 256;
-    ctx.canvas.height = 256;
-    ctx.fillStyle = "white";
-    ctx.fillRect(0,0, 256, 256);
-}
+canvas.width = 256;
+canvas.height = 256;
+
+const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;;
+ctx.fillStyle = "white";
+ctx.fillRect(0,0, 256, 256);
 app.append(canvas);
 
 const clearBut = document.createElement("button");
@@ -50,7 +49,7 @@ canvas.addEventListener("mouseup", (pos) => {
     }
 });
 
-function drawLine(context, x1, y1, x2, y2) {
+function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
     context.beginPath();
     context.strokeStyle = "black";
     context.lineWidth = 1;
@@ -61,7 +60,5 @@ function drawLine(context, x1, y1, x2, y2) {
 }
 
 clearBut.addEventListener("mousedown", () => {
-    if(ctx) {
-        ctx.fillRect(0,0, 256, 256);
-    }
+    ctx.fillRect(0,0, 256, 256);
 });
