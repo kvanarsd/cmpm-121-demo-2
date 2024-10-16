@@ -27,8 +27,9 @@ app.append(clearBut);
 let isDrawing = false;
 let x = 0;
 let y = 0;
-const lines: { x: number; y: number; }[][] = [];
+let lines: { x: number; y: number; }[][] = [];
 let currentLine: { x: number; y: number; }[];
+const drawEvent = new CustomEvent("drawing-changed")
 
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
@@ -40,7 +41,8 @@ canvas.addEventListener("mousemove", (pos) => {
         currentLine.push({x:pos.offsetX, y:pos.offsetY});
         lines.push([...currentLine]);
         currentLine.shift();
-        drawAll();
+        //drawAll();
+        canvas.dispatchEvent(drawEvent);
     }
 });
 
@@ -50,7 +52,8 @@ canvas.addEventListener("mouseup", (pos) => {
         currentLine.push({x:pos.offsetX, y:pos.offsetY});
         lines.push([...currentLine]);
         currentLine.shift();
-        drawAll();
+        //drawAll();
+        canvas.dispatchEvent(drawEvent);
         
     }
 });
@@ -71,6 +74,13 @@ function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2:
     context.closePath();
 }
 
-clearBut.addEventListener("mousedown", () => {
+canvas.addEventListener("drawing-changed", function(drawEvent) {
     ctx.fillRect(0,0, 256, 256);
+    for (const line of lines) {
+        drawLine(ctx, line[0].x, line[0].y, line[1].x, line[1].y);
+    }
+})
+
+clearBut.addEventListener("mousedown", () => {
+    lines = [];
 });
