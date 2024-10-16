@@ -23,24 +23,36 @@ const clearBut = document.createElement("button");
 clearBut.innerHTML = "Clear";
 app.append(clearBut);
 
+const undoBut = document.createElement("button");
+undoBut.innerHTML = "Undo";
+app.append(undoBut);
+
+const redoBut = document.createElement("button");
+redoBut.innerHTML = "Redo";
+app.append(redoBut);
+
 // functions ----------------------------------------------------------------
 let isDrawing = false;
 let x = 0;
 let y = 0;
-let lines: { x: number; y: number; }[][] = [];
-let currentLine: { x: number; y: number; }[];
+let lines: { x: number; y: number; }[][][] = [];
+let currentLine: { x: number; y: number; }[][] = [];
+let currentStroke: { x: number; y: number; }[];
+let lastLine;
 const drawEvent = new CustomEvent("drawing-changed")
 
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
-    currentLine = [{x:pos.offsetX, y:pos.offsetY}];
+    lastLine = [];
+    currentStroke = [{x:pos.offsetX, y:pos.offsetY}];
 });
 
 canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
-        currentLine.push({x:pos.offsetX, y:pos.offsetY});
-        lines.push([...currentLine]);
-        currentLine.shift();
+        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        currentLine.push([...currentStroke]);
+        //lines.push([...currentLine]);
+        currentStroke.shift();
         canvas.dispatchEvent(drawEvent);
     }
 });
@@ -48,9 +60,11 @@ canvas.addEventListener("mousemove", (pos) => {
 canvas.addEventListener("mouseup", (pos) => {
     if (isDrawing) {
         isDrawing = false;
-        currentLine.push({x:pos.offsetX, y:pos.offsetY});
+        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        currentLine.push([...currentStroke]);
+        //lines.splice(lines.length - 1, 1, [...currentLine]);
         lines.push([...currentLine]);
-        currentLine.shift();
+        currentLine = [];
         canvas.dispatchEvent(drawEvent);
         
     }
@@ -69,10 +83,36 @@ function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2:
 canvas.addEventListener("drawing-changed", function(drawEvent) {
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
-        drawLine(ctx, line[0].x, line[0].y, line[1].x, line[1].y);
+        for(const stroke of line) {
+            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
+        }
+    }
+    if (currentLine != lines[lines.length-1]) {
+        for(const stroke of currentLine) {
+            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
+        }
     }
 })
 
 clearBut.addEventListener("mousedown", () => {
     lines = [];
+    currentLine = [];
+    canvas.dispatchEvent(drawEvent);
 });
+
+undoBut.addEventListener("mousedown", () => {
+    if(lines.length > 0) {
+        lastLine = [];
+        lastLine.push(lines.pop());
+        
+        canvas.dispatchEvent(drawEvent);
+    }
+})
+
+redoBut.addEventListener("mousedown", () => {
+    if(lastLine.length > 0) {
+        lines.push(lastLine.pop());
+        canvas.dispatchEvent(drawEvent);
+    }
+})
+
