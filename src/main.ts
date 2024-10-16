@@ -41,7 +41,6 @@ canvas.addEventListener("mousemove", (pos) => {
         currentLine.push({x:pos.offsetX, y:pos.offsetY});
         lines.push([...currentLine]);
         currentLine.shift();
-        //drawAll();
         canvas.dispatchEvent(drawEvent);
     }
 });
@@ -52,17 +51,10 @@ canvas.addEventListener("mouseup", (pos) => {
         currentLine.push({x:pos.offsetX, y:pos.offsetY});
         lines.push([...currentLine]);
         currentLine.shift();
-        //drawAll();
         canvas.dispatchEvent(drawEvent);
         
     }
 });
-
-function drawAll() {
-    for (const line of lines) {
-        drawLine(ctx, line[0].x, line[0].y, line[1].x, line[1].y);
-    }
-}
 
 function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
     context.beginPath();
