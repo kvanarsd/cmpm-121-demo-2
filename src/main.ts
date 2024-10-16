@@ -51,7 +51,6 @@ canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
         currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
-        //lines.push([...currentLine]);
         currentStroke.shift();
         canvas.dispatchEvent(drawEvent);
     }
@@ -62,7 +61,6 @@ canvas.addEventListener("mouseup", (pos) => {
         isDrawing = false;
         currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
-        //lines.splice(lines.length - 1, 1, [...currentLine]);
         lines.push([...currentLine]);
         currentLine = [];
         canvas.dispatchEvent(drawEvent);
@@ -87,7 +85,7 @@ canvas.addEventListener("drawing-changed", function(drawEvent) {
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
         }
     }
-    if (currentLine != lines[lines.length-1]) {
+    if (currentLine.length > 0) {
         for(const stroke of currentLine) {
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
         }
@@ -102,9 +100,7 @@ clearBut.addEventListener("mousedown", () => {
 
 undoBut.addEventListener("mousedown", () => {
     if(lines.length > 0) {
-        lastLine = [];
-        lastLine.push(lines.pop());
-        
+        lastLine.push(lines.pop()); 
         canvas.dispatchEvent(drawEvent);
     }
 })
