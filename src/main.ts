@@ -31,8 +31,16 @@ const redoBut = document.createElement("button");
 redoBut.innerHTML = "Redo";
 app.append(redoBut);
 
+const thin = document.createElement("button");
+thin.innerHTML = "Thin";
+app.append(thin);
+
+const thick = document.createElement("button");
+thick.innerHTML = "Thick";
+app.append(thick);
+
 // functions ----------------------------------------------------------------
-let isDrawing = false;
+let isDrawing = false; 
 const lines: Line[] = [];
 const redoLines: Line[] = [];
 let currentLine: Line | null;
@@ -92,16 +100,6 @@ canvas.addEventListener("mouseout", () => {
     }
 });
 
-function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
-    context.beginPath();
-    context.strokeStyle = "black";
-    context.lineWidth = 1;
-    context.moveTo(x1, y1);
-    context.lineTo(x2, y2);
-    context.stroke();
-    context.closePath();
-}
-
 canvas.addEventListener("drawing-changed", function() {
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
@@ -109,6 +107,7 @@ canvas.addEventListener("drawing-changed", function() {
     }
 })
 
+// button functions
 clearBut.addEventListener("mousedown", () => {
     lines.splice(0, lines.length);
     currentLine = null;
