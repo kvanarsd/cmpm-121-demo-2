@@ -34,10 +34,12 @@ app.append(redoBut);
 const thin = document.createElement("button");
 thin.innerHTML = "Thin";
 app.append(thin);
+thin.className = "selected"
 
 const thick = document.createElement("button");
 thick.innerHTML = "Thick";
 app.append(thick);
+thick.className = "not-selected"
 
 // functions ----------------------------------------------------------------
 let isDrawing = false; 
@@ -45,12 +47,15 @@ const lines: Line[] = [];
 const redoLines: Line[] = [];
 let currentLine: Line | null;
 const drawEvent = new CustomEvent("drawing-changed")
+let strokeSize = 1;
 
 class Line {
     private points: { x: number; y: number; }[] = [];
+    private stroke: number;
 
     constructor(startX: number, startY: number) {
         this.points.push({x: startX, y: startY});
+        this.stroke = strokeSize;
     }
 
     mouseMove(x: number, y: number) {
@@ -60,7 +65,7 @@ class Line {
     display(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 1;
+        ctx.lineWidth = this.stroke;
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
         for (let i = 0; i < this.points.length; i++) {
@@ -128,5 +133,21 @@ redoBut.addEventListener("mousedown", () => {
         lines.push(redo);
         canvas.dispatchEvent(drawEvent);
     }
+})
+
+thin.addEventListener("mousedown", () => {
+    strokeSize = 1;
+    thin.classList.add("selected");
+    thin.classList.remove("not-selected");
+    thick.classList.add("not-selected");
+    thick.classList.remove("selected");
+})
+
+thick.addEventListener("mousedown", () => {
+    strokeSize = 3;
+    thick.classList.add("selected");
+    thick.classList.remove("not-selected");
+    thin.classList.add("not-selected");
+    thin.classList.remove("selected");
 })
 
