@@ -46,8 +46,32 @@ let isDrawing = false;
 const lines: Line[] = [];
 const redoLines: Line[] = [];
 let currentLine: Line | null;
-const drawEvent = new CustomEvent("drawing-changed")
+const drawEvent = new CustomEvent("drawing-changed");
+const toolEvent = new CustomEvent("tool-moved");
 let strokeSize = 1;
+let cursor: Cursor | null;
+
+class Cursor {
+    private x: number;
+    private y: number;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    position(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); 
+        ctx.font = "32px monospace";
+        ctx.fillStyle = 'black';
+        ctx.fillText("*", this.x - 8,this.y + 16);
+    }
+}
 
 class Line {
     private points: { x: number; y: number; }[] = [];
@@ -88,6 +112,12 @@ canvas.addEventListener("mousemove", (pos) => {
         if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
         canvas.dispatchEvent(drawEvent);
     }
+
+    if(cursor) {
+        cursor.position(pos.offsetX, pos.offsetY);
+        canvas.dispatchEvent(toolEvent);
+    }
+    
 });
 
 canvas.addEventListener("mouseup", (pos) => {
@@ -103,13 +133,32 @@ canvas.addEventListener("mouseout", () => {
         isDrawing = false;
         currentLine = null;
     }
+    cursor = null;
+    canvas.dispatchEvent(drawEvent);
+});
+
+canvas.addEventListener("mouseenter", () => {
+    cursor = new Cursor(0,0);
 });
 
 canvas.addEventListener("drawing-changed", function() {
+    ctx.fillStyle = 'white';
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
         line.display(ctx);
     }
+    
+    //cursor.draw(ctx);
+})
+
+canvas.addEventListener("tool-moved", function() {
+    if(!isDrawing) {
+        canvas.dispatchEvent(drawEvent);
+    }
+    if(cursor) {
+        cursor.draw(ctx);    
+    }
+    //
 })
 
 // button functions

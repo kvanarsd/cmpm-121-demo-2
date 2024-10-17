@@ -86,6 +86,7 @@ canvas {
   border: 2px solid black;
   border-radius: 20px;
   filter: drop-shadow(4px 4px 5px #000);
+  cursor: none;
 }
 
 @media (prefers-color-scheme: light) {
