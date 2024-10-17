@@ -41,6 +41,31 @@ let currentStroke: { x: number; y: number; }[];
 let lastLine;
 const drawEvent = new CustomEvent("drawing-changed")
 
+class Line {
+    private points: { x: number; y: number; }[] = [];
+
+    constructor(startX: number, startY: number) {
+        this.points.push({x: startX, y: startY});
+    }
+
+    mouseMove(x: number, y: number) {
+        this.points.push({x, y});
+    }
+
+    display(ctx: CanvasRenderingContext2D) {
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for (let i = 0; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
+
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     lastLine = [];
