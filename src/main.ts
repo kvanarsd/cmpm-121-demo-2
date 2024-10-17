@@ -33,10 +33,7 @@ app.append(redoBut);
 
 // functions ----------------------------------------------------------------
 let isDrawing = false;
-//let lines: { x: number; y: number; }[][][] = [];
 const lines: Line[] = [];
-//let currentLine: { x: number; y: number; }[][] = [];
-//let currentStroke: { x: number; y: number; }[];
 const redoLines: Line[] = [];
 let currentLine: Line | null;
 const drawEvent = new CustomEvent("drawing-changed")
@@ -68,8 +65,6 @@ class Line {
 
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
-    //lastLine = [];
-    //currentStroke = [{x:pos.offsetX, y:pos.offsetY}];
     redoLines.splice(0, redoLines.length);
     currentLine = new Line(pos.offsetX, pos.offsetY);
     lines.push(currentLine);
@@ -77,9 +72,6 @@ canvas.addEventListener("mousedown", (pos) => {
 
 canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
-        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
-        currentLine.push([...currentStroke]);
-        currentStroke.shift();*/
         if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
         canvas.dispatchEvent(drawEvent);
     }
@@ -88,10 +80,6 @@ canvas.addEventListener("mousemove", (pos) => {
 canvas.addEventListener("mouseup", (pos) => {
     if (isDrawing) {
         isDrawing = false;
-        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
-        currentLine.push([...currentStroke]);
-        lines.push([...currentLine]);
-        currentLine = [];*/
         if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
         canvas.dispatchEvent(drawEvent);    
     }
@@ -118,15 +106,7 @@ canvas.addEventListener("drawing-changed", function() {
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
         line.display(ctx);
-        /*for(const stroke of line) {
-            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }*/
     }
-    /*if (currentLine.length > 0) {
-        for(const stroke of currentLine) {
-            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }
-    }*/
 })
 
 clearBut.addEventListener("mousedown", () => {
