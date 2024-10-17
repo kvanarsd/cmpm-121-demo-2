@@ -33,12 +33,12 @@ app.append(redoBut);
 
 // functions ----------------------------------------------------------------
 let isDrawing = false;
-let x = 0;
-let y = 0;
-let lines: { x: number; y: number; }[][][] = [];
-let currentLine: { x: number; y: number; }[][] = [];
-let currentStroke: { x: number; y: number; }[];
-let lastLine;
+//let lines: { x: number; y: number; }[][][] = [];
+const lines: Line[] = [];
+//let currentLine: { x: number; y: number; }[][] = [];
+//let currentStroke: { x: number; y: number; }[];
+const redoLines: Line[] = [];
+let currentLine: Line | null;
 const drawEvent = new CustomEvent("drawing-changed")
 
 class Line {
@@ -68,15 +68,19 @@ class Line {
 
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
-    lastLine = [];
-    currentStroke = [{x:pos.offsetX, y:pos.offsetY}];
+    //lastLine = [];
+    //currentStroke = [{x:pos.offsetX, y:pos.offsetY}];
+    redoLines.splice(0, redoLines.length);
+    currentLine = new Line(pos.offsetX, pos.offsetY);
+    lines.push(currentLine);
 });
 
 canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
-        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
-        currentStroke.shift();
+        currentStroke.shift();*/
+        if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
         canvas.dispatchEvent(drawEvent);
     }
 });
@@ -84,12 +88,19 @@ canvas.addEventListener("mousemove", (pos) => {
 canvas.addEventListener("mouseup", (pos) => {
     if (isDrawing) {
         isDrawing = false;
-        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
         lines.push([...currentLine]);
-        currentLine = [];
-        canvas.dispatchEvent(drawEvent);
-        
+        currentLine = [];*/
+        if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
+        canvas.dispatchEvent(drawEvent);    
+    }
+});
+
+canvas.addEventListener("mouseout", () => {
+    if (isDrawing) {
+        isDrawing = false;
+        currentLine = null;
     }
 });
 
@@ -103,36 +114,39 @@ function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2:
     context.closePath();
 }
 
-canvas.addEventListener("drawing-changed", function(drawEvent) {
+canvas.addEventListener("drawing-changed", function() {
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
-        for(const stroke of line) {
+        line.display(ctx);
+        /*for(const stroke of line) {
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }
+        }*/
     }
-    if (currentLine.length > 0) {
+    /*if (currentLine.length > 0) {
         for(const stroke of currentLine) {
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
         }
-    }
+    }*/
 })
 
 clearBut.addEventListener("mousedown", () => {
-    lines = [];
-    currentLine = [];
+    lines.splice(0, lines.length);
+    currentLine = null;
     canvas.dispatchEvent(drawEvent);
 });
 
 undoBut.addEventListener("mousedown", () => {
-    if(lines.length > 0) {
-        lastLine.push(lines.pop()); 
+    const undo = lines.pop();
+    if(undo) {
+        redoLines.push(undo); 
         canvas.dispatchEvent(drawEvent);
     }
 })
 
 redoBut.addEventListener("mousedown", () => {
-    if(lastLine.length > 0) {
-        lines.push(lastLine.pop());
+    const redo = redoLines.pop();
+    if(redo) {
+        lines.push(redo);
         canvas.dispatchEvent(drawEvent);
     }
 })
