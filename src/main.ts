@@ -20,26 +20,25 @@ ctx.fillRect(0,0, 256, 256);
 app.append(canvas);
 
 const clearBut = document.createElement("button");
-clearBut.innerHTML = "Clear";
-app.append(clearBut);
-
+createButtons(clearBut, "Clear", false);
 const undoBut = document.createElement("button");
-undoBut.innerHTML = "Undo";
-app.append(undoBut);
-
+createButtons(undoBut, "Undo", false);
 const redoBut = document.createElement("button");
-redoBut.innerHTML = "Redo";
-app.append(redoBut);
-
+createButtons(redoBut, "Redo", false);
 const thin = document.createElement("button");
-thin.innerHTML = "Thin";
-app.append(thin);
+createButtons(thin, "Thin", true);
 thin.className = "selected"
-
 const thick = document.createElement("button");
-thick.innerHTML = "Thick";
-app.append(thick);
-thick.className = "not-selected"
+createButtons(thick, "Thick", true);
+const emoji1 = document.createElement("button");
+createButtons(emoji1, "✨", true);
+emoji1.addEventListener("click", () => stamp(emoji1));
+const emoji2 = document.createElement("button");
+createButtons(emoji2, "❤️", true);
+emoji2.addEventListener("click", () => stamp(emoji2));
+const emoji3 = document.createElement("button");
+createButtons(emoji3, "💋", true);
+emoji3.addEventListener("click", () => stamp(emoji3));
 
 // functions ----------------------------------------------------------------
 let isDrawing = false; 
@@ -50,14 +49,22 @@ const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 let strokeSize = 1;
 let cursor: Cursor | null;
+let emoji: HTMLButtonElement | null;
 
 class Cursor {
     private x: number;
     private y: number;
+    public shape: string;
 
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
+        if(emoji) {
+            this.shape = emoji.innerHTML;
+        } else {
+            this.shape = "*";
+        }
+        
     }
 
     position(x: number, y: number) {
@@ -66,9 +73,14 @@ class Cursor {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
+        if(emoji) {
+            this.shape = emoji.innerHTML;
+        } else {
+            this.shape = "*"
+        }
         ctx.font = "32px monospace";
         ctx.fillStyle = 'black';
-        ctx.fillText("*", this.x - 8,this.y + 16);
+        ctx.fillText(this.shape, this.x - 8,this.y + 16);
     }
 }
 
@@ -99,7 +111,7 @@ class Line {
     }
 }
 
-// canvas mouse movements ------------------------------------------
+// canvas mouse movements -------------------------------------------
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     redoLines.splice(0, redoLines.length);
@@ -160,13 +172,44 @@ canvas.addEventListener("tool-moved", function() {
 })
 
 // button functions -----------------------------------------
-clearBut.addEventListener("mousedown", () => {
+function createButtons(button: HTMLButtonElement, value: string, brush: boolean) {
+    button.innerHTML = value;
+    app.append(button);
+    if(button.innerHTML != "Thin" && brush) {
+        button.className = "not-selected";
+    }
+}
+
+function stamp(button: HTMLButtonElement) {
+    if(emoji) {
+        changeClass(emoji);
+    }
+    emoji = button;
+    changeClass(button);
+    if (thin.className == "selected") {
+        changeClass(thin);
+    } else if (thick.className == "selected") {
+        changeClass(thick);
+    }
+}
+
+function changeClass(button: HTMLButtonElement) {
+    if(button.className == "not-selected") {
+        button.classList.add("selected");
+        button.classList.remove("not-selected");
+    } else {
+        button.classList.add("not-selected");
+        button.classList.remove("selected");
+    }
+}
+
+clearBut.addEventListener("click", () => {
     lines.splice(0, lines.length);
     currentLine = null;
     canvas.dispatchEvent(drawEvent);
 });
 
-undoBut.addEventListener("mousedown", () => {
+undoBut.addEventListener("click", () => {
     const undo = lines.pop();
     if(undo) {
         redoLines.push(undo); 
@@ -174,7 +217,7 @@ undoBut.addEventListener("mousedown", () => {
     }
 })
 
-redoBut.addEventListener("mousedown", () => {
+redoBut.addEventListener("click", () => {
     const redo = redoLines.pop();
     if(redo) {
         lines.push(redo);
@@ -182,19 +225,25 @@ redoBut.addEventListener("mousedown", () => {
     }
 })
 
-thin.addEventListener("mousedown", () => {
+thin.addEventListener("click", () => {
     strokeSize = 1;
-    thin.classList.add("selected");
-    thin.classList.remove("not-selected");
-    thick.classList.add("not-selected");
-    thick.classList.remove("selected");
+    changeClass(thin);
+    if (emoji) {
+        changeClass(emoji);
+        emoji = null;
+    } else {
+        changeClass(thick);
+    }
 })
 
-thick.addEventListener("mousedown", () => {
+thick.addEventListener("click", () => {
     strokeSize = 3;
-    thick.classList.add("selected");
-    thick.classList.remove("not-selected");
-    thin.classList.add("not-selected");
-    thin.classList.remove("selected");
+    changeClass(thick);
+    if (emoji) {
+        changeClass(emoji);
+        emoji = null;
+    } else {
+        changeClass(thin);
+    }
 })
 
