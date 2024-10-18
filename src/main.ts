@@ -17,6 +17,7 @@ canvas.height = 256;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;;
 ctx.fillStyle = "white";
 ctx.fillRect(0,0, 256, 256);
+ctx.font = "32px monospace";
 app.append(canvas);
 
 const clearBut = document.createElement("button");
@@ -49,7 +50,15 @@ const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 let strokeSize = 1;
 let cursor: Cursor | null;
-let emoji: HTMLButtonElement | null;
+let emojiBut: HTMLButtonElement | null;
+let curEmoji: placedStamp | null;
+const placedEmojis: placedStamp[] = [];
+
+interface placedStamp {
+    shape: string;
+    x: number;
+    y: number;
+}
 
 class Cursor {
     private x: number;
@@ -59,8 +68,8 @@ class Cursor {
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
-        if(emoji) {
-            this.shape = emoji.innerHTML;
+        if(emojiBut) {
+            this.shape = emojiBut.innerHTML;
         } else {
             this.shape = "*";
         }
@@ -73,13 +82,13 @@ class Cursor {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        if(emoji) {
-            this.shape = emoji.innerHTML;
+        if(emojiBut) {
+            this.shape = emojiBut.innerHTML;
         } else {
             this.shape = "*"
         }
-        ctx.font = "32px monospace";
-        ctx.fillStyle = 'black';
+        
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         ctx.fillText(this.shape, this.x - 8,this.y + 16);
     }
 }
@@ -115,17 +124,30 @@ class Line {
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     redoLines.splice(0, redoLines.length);
-    currentLine = new Line(pos.offsetX, pos.offsetY);
-    lines.push(currentLine);
+    //currentLine = null;
+
+    if (emojiBut) {
+        curEmoji = {shape: emojiBut.innerHTML, x: pos.offsetX, y: pos.offsetY}
+        placedEmojis.push(curEmoji);
+    } else {
+        currentLine = new Line(pos.offsetX, pos.offsetY);
+        lines.push(currentLine);
+    }
 });
 
 canvas.addEventListener("mousemove", (pos) => {
     if (isDrawing) {
-        if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
+        if (currentLine) {
+            currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
+        if (emojiBut && curEmoji) { 
+            //placedEmojis[placedEmojis.length].x = pos.offsetX;
+            //placedEmojis[placedEmojis.length].y = pos.offsetY;\
+            curEmoji.x = pos.offsetX;
+            curEmoji.y = pos.offsetY;
+        }
         canvas.dispatchEvent(drawEvent);
-    }
-
-    if(cursor) {
+    } else if(cursor) {
         cursor.position(pos.offsetX, pos.offsetY);
         canvas.dispatchEvent(toolEvent);
     }
@@ -135,13 +157,19 @@ canvas.addEventListener("mousemove", (pos) => {
 canvas.addEventListener("mouseup", (pos) => {
     if (isDrawing) {
         isDrawing = false;
-        if (currentLine) {currentLine.mouseMove(pos.offsetX, pos.offsetY);}
+        if (currentLine) {
+            currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
+        if(emojiBut && curEmoji) {
+            curEmoji.x = pos.offsetX;
+            curEmoji.y = pos.offsetY;
+        }
         canvas.dispatchEvent(drawEvent);    
     }
 });
 
 canvas.addEventListener("mouseout", () => {
-    if (isDrawing) {
+    if (isDrawing || currentLine) {
         isDrawing = false;
         currentLine = null;
     }
@@ -159,6 +187,11 @@ canvas.addEventListener("drawing-changed", function() {
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
         line.display(ctx);
+    }
+    for (const emoji of placedEmojis) {
+        ctx.font = "32px monospace";
+        ctx.fillStyle = 'black';
+        ctx.fillText(emoji.shape, emoji.x - 8,emoji.y + 16);
     }
 })
 
@@ -181,10 +214,10 @@ function createButtons(button: HTMLButtonElement, value: string, brush: boolean)
 }
 
 function stamp(button: HTMLButtonElement) {
-    if(emoji) {
-        changeClass(emoji);
+    if(emojiBut) {
+        changeClass(emojiBut);
     }
-    emoji = button;
+    emojiBut = button;
     changeClass(button);
     if (thin.className == "selected") {
         changeClass(thin);
@@ -228,9 +261,9 @@ redoBut.addEventListener("click", () => {
 thin.addEventListener("click", () => {
     strokeSize = 1;
     changeClass(thin);
-    if (emoji) {
-        changeClass(emoji);
-        emoji = null;
+    if (emojiBut) {
+        changeClass(emojiBut);
+        emojiBut = null;
     } else {
         changeClass(thick);
     }
@@ -239,9 +272,9 @@ thin.addEventListener("click", () => {
 thick.addEventListener("click", () => {
     strokeSize = 3;
     changeClass(thick);
-    if (emoji) {
-        changeClass(emoji);
-        emoji = null;
+    if (emojiBut) {
+        changeClass(emojiBut);
+        emojiBut = null;
     } else {
         changeClass(thin);
     }
