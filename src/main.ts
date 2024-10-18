@@ -66,7 +66,6 @@ class Cursor {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); 
         ctx.font = "32px monospace";
         ctx.fillStyle = 'black';
         ctx.fillText("*", this.x - 8,this.y + 16);
@@ -100,6 +99,7 @@ class Line {
     }
 }
 
+// canvas mouse movements ------------------------------------------
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     redoLines.splice(0, redoLines.length);
@@ -141,14 +141,13 @@ canvas.addEventListener("mouseenter", () => {
     cursor = new Cursor(0,0);
 });
 
+// events ---------------------------------------------------
 canvas.addEventListener("drawing-changed", function() {
     ctx.fillStyle = 'white';
     ctx.fillRect(0,0, 256, 256);
     for (const line of lines) {
         line.display(ctx);
     }
-    
-    //cursor.draw(ctx);
 })
 
 canvas.addEventListener("tool-moved", function() {
@@ -158,10 +157,9 @@ canvas.addEventListener("tool-moved", function() {
     if(cursor) {
         cursor.draw(ctx);    
     }
-    //
 })
 
-// button functions
+// button functions -----------------------------------------
 clearBut.addEventListener("mousedown", () => {
     lines.splice(0, lines.length);
     currentLine = null;
