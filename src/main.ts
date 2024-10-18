@@ -62,37 +62,10 @@ interface placedStamp {
     rotation: number;
 }
 
-class Cursor {
-    private x: number;
-    private y: number;
-    public shape: string;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-        if(emojiBut) {
-            this.shape = emojiBut.innerHTML;
-        } else {
-            this.shape = "*";
-        }
-        
-    }
-
-    position(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
-
-    draw(ctx: CanvasRenderingContext2D) {
-        if(emojiBut) {
-            this.shape = emojiBut.innerHTML;
-        } else {
-            this.shape = "*"
-        }
-        
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillText(this.shape, this.x - 8,this.y + 16);
-    }
+interface Cursor {
+    shape: string;
+    x: number;
+    y: number;
 }
 
 class Line {
@@ -150,7 +123,8 @@ canvas.addEventListener("mousemove", (pos) => {
         }
         canvas.dispatchEvent(drawEvent);
     } else if(cursor) {
-        cursor.position(pos.offsetX, pos.offsetY);
+        cursor.x = pos.offsetX;
+        cursor.y = pos.offsetY;
         canvas.dispatchEvent(toolEvent);
     }
     
@@ -176,8 +150,19 @@ canvas.addEventListener("mouseout", () => {
 });
 
 canvas.addEventListener("mouseenter", () => {
-    cursor = new Cursor(0,0);
+    cursor = {shape: "*", x: 0, y: 0};
 });
+
+function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
+    if(emojiBut) {
+        cursor.shape = emojiBut.innerHTML;
+    } else {
+        cursor.shape = "*"
+    }
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillText(cursor.shape, cursor.x - 8,cursor.y + 16);
+}
 
 // events ---------------------------------------------------
 canvas.addEventListener("drawing-changed", function() {
@@ -201,7 +186,7 @@ canvas.addEventListener("tool-moved", function() {
         canvas.dispatchEvent(drawEvent);
     }
     if(cursor) {
-        cursor.draw(ctx);    
+        draw(cursor, ctx);    
     }
 })
 
