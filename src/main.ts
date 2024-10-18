@@ -52,12 +52,14 @@ let strokeSize = 1;
 let cursor: Cursor | null;
 let emojiBut: HTMLButtonElement | null;
 let curEmoji: placedStamp | null;
+let initialPos: {x: number, y: number};
 const placedEmojis: placedStamp[] = [];
 
 interface placedStamp {
     shape: string;
     x: number;
     y: number;
+    rotation: number;
 }
 
 class Cursor {
@@ -124,11 +126,11 @@ class Line {
 canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     redoLines.splice(0, redoLines.length);
-    //currentLine = null;
 
     if (emojiBut) {
-        curEmoji = {shape: emojiBut.innerHTML, x: pos.offsetX, y: pos.offsetY}
+        curEmoji = {shape: emojiBut.innerHTML, x: pos.offsetX, y: pos.offsetY, rotation: 0}
         placedEmojis.push(curEmoji);
+        initialPos = {x: pos.offsetX, y: pos.offsetY};
     } else {
         currentLine = new Line(pos.offsetX, pos.offsetY);
         lines.push(currentLine);
@@ -141,10 +143,10 @@ canvas.addEventListener("mousemove", (pos) => {
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
         }
         if (emojiBut && curEmoji) { 
-            //placedEmojis[placedEmojis.length].x = pos.offsetX;
-            //placedEmojis[placedEmojis.length].y = pos.offsetY;\
-            curEmoji.x = pos.offsetX;
-            curEmoji.y = pos.offsetY;
+            const dx = pos.offsetX - initialPos.x;
+            const dy = pos.offsetY - initialPos.y;
+            const angle = Math.atan2(dy, dx);
+            curEmoji.rotation = angle;
         }
         canvas.dispatchEvent(drawEvent);
     } else if(cursor) {
@@ -159,10 +161,6 @@ canvas.addEventListener("mouseup", (pos) => {
         isDrawing = false;
         if (currentLine) {
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
-        }
-        if(emojiBut && curEmoji) {
-            curEmoji.x = pos.offsetX;
-            curEmoji.y = pos.offsetY;
         }
         canvas.dispatchEvent(drawEvent);    
     }
@@ -189,9 +187,12 @@ canvas.addEventListener("drawing-changed", function() {
         line.display(ctx);
     }
     for (const emoji of placedEmojis) {
-        ctx.font = "32px monospace";
+        ctx.save();
+        ctx.translate(emoji.x, emoji.y); 
+        ctx.rotate(emoji.rotation || 0); 
         ctx.fillStyle = 'black';
-        ctx.fillText(emoji.shape, emoji.x - 8,emoji.y + 16);
+        ctx.fillText(emoji.shape, -8,16);
+        ctx.restore();
     }
 })
 
