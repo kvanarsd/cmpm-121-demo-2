@@ -40,6 +40,8 @@ emoji2.addEventListener("click", () => stamp(emoji2));
 const emoji3 = document.createElement("button");
 createButtons(emoji3, "💋", true);
 emoji3.addEventListener("click", () => stamp(emoji3));
+const customEmo = document.createElement("button");
+createButtons(customEmo, "Create Stamp", false);
 
 // functions ----------------------------------------------------------------
 let isDrawing = false; 
@@ -264,5 +266,15 @@ thick.addEventListener("click", () => {
     } else {
         changeClass(thin);
     }
+})
+
+customEmo.addEventListener("click", () => {
+    const sticker = prompt("Custom stamp", "❤️");
+    if(sticker) {
+        const newButton = document.createElement("button");
+        createButtons(newButton, sticker, true);
+        newButton.addEventListener("click", () => stamp(newButton));
+    }
+    
 })
 
