@@ -45,7 +45,7 @@ const redoBut = document.createElement("button");
 createButtons(redoBut, "Redo", false);
 redoBut.addEventListener("click", () => undoRedo(redoLines, lines));
 const exportCan = document.createElement("button");
-createButtons(exportCan, "Export", false);
+createButtons(exportCan, "Export", false, exportCanvas);
 
 const thin = document.createElement("button");
 createButtons(thin, "Thin", true);
@@ -187,21 +187,25 @@ function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
 }
 
 // events ---------------------------------------------------
-canvas.addEventListener("drawing-changed", function() {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0,0, 256, 256);
+function drawCanvasContent(ctxCan: CanvasRenderingContext2D, scale: number) {
+    ctxCan.fillStyle = 'white';
+    ctxCan.fillRect(0,0, 256, 256);
     for (const line of lines) {
-        line.display(ctx);
+        line.display(ctxCan);
     }
     for (const emoji of placedEmojis) {
-        ctx.save();
-        ctx.translate(emoji.x, emoji.y); 
-        ctx.rotate(emoji.rotation || 0); 
-        ctx.fillStyle = 'black';
-        ctx.fillText(emoji.shape, -8,16);
-        ctx.restore();
+        ctxCan.save();
+        ctxCan.translate(emoji.x, emoji.y); 
+        ctxCan.rotate(emoji.rotation || 0); 
+        ctxCan.fillStyle = 'black';
+        ctxCan.fillText(emoji.shape, -8,16);
+        ctxCan.restore();
     }
-})
+}
+
+canvas.addEventListener("drawing-changed", function() {
+    drawCanvasContent(ctx, 1);
+});
 
 canvas.addEventListener("tool-moved", function() {
     if(!isDrawing) {
@@ -287,3 +291,18 @@ customEmo.addEventListener("click", () => {
     
 })
 
+function exportCanvas() {
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = 1024;
+    tempCanvas.height = 1024;
+    const tempCtx = tempCanvas.getContext("2d") as CanvasRenderingContext2D;;
+    tempCtx.scale(4,4);
+    tempCtx.font = "32px monospace";
+    drawCanvasContent(tempCtx, 4);
+    
+
+    const anchor = document.createElement("a");
+    anchor.href = tempCanvas.toDataURL("image/png");
+    anchor.download = "sketchpad.png";
+    anchor.click();
+}
