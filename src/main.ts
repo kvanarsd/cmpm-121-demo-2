@@ -37,26 +37,29 @@ ctx.fillRect(0,0, 256, 256);
 ctx.font = "32px monospace";
 
 const clearBut = document.createElement("button");
-createButtons(clearBut, "Clear", false);
+createButtons(clearBut, "Clear", false, clear);
 const undoBut = document.createElement("button");
 createButtons(undoBut, "Undo", false);
+undoBut.addEventListener("click", () => undoRedo(lines, redoLines));
 const redoBut = document.createElement("button");
 createButtons(redoBut, "Redo", false);
+redoBut.addEventListener("click", () => undoRedo(redoLines, lines));
+const exportCan = document.createElement("button");
+createButtons(exportCan, "Export", false);
 
 const thin = document.createElement("button");
 createButtons(thin, "Thin", true);
 thin.className = "selected"
+thin.addEventListener("click", () => size(thin, thick, 1));
 const thick = document.createElement("button");
 createButtons(thick, "Thick", true);
+thick.addEventListener("click", () => size(thick, thin, 3));
 const emoji1 = document.createElement("button");
-createButtons(emoji1, "✨", true);
-emoji1.addEventListener("click", () => stamp(emoji1));
+createButtons(emoji1, "✨", true, stamp);
 const emoji2 = document.createElement("button");
-createButtons(emoji2, "❤️", true);
-emoji2.addEventListener("click", () => stamp(emoji2));
+createButtons(emoji2, "❤️", true, stamp);
 const emoji3 = document.createElement("button");
-createButtons(emoji3, "💋", true);
-emoji3.addEventListener("click", () => stamp(emoji3));
+createButtons(emoji3, "💋", true, stamp);
 const customEmo = document.createElement("button");
 createButtons(customEmo, "Create Stamp", false);
 
@@ -210,8 +213,13 @@ canvas.addEventListener("tool-moved", function() {
 })
 
 // button functions -----------------------------------------
-function createButtons(button: HTMLButtonElement, value: string, brush: boolean) {
+function createButtons(button: HTMLButtonElement, value: string, brush: boolean, 
+    func?: (button: HTMLButtonElement) => void | void | undefined) {
     button.innerHTML = value;
+    if (func) {
+        button.addEventListener("click", () => func(button));
+    }
+    
     if(!brush) {
         settings.appendChild(button);
     } else {
@@ -219,7 +227,7 @@ function createButtons(button: HTMLButtonElement, value: string, brush: boolean)
     }
     if(button.innerHTML != "Thin" && brush) {
         button.className = "not-selected";
-    }
+    } 
 }
 
 function stamp(button: HTMLButtonElement) {
@@ -245,56 +253,36 @@ function changeClass(button: HTMLButtonElement) {
     }
 }
 
-clearBut.addEventListener("click", () => {
+function clear() {
     lines.splice(0, lines.length);
     currentLine = null;
     canvas.dispatchEvent(drawEvent);
-});
+}
 
-undoBut.addEventListener("click", () => {
-    const undo = lines.pop();
-    if(undo) {
-        redoLines.push(undo); 
+function undoRedo(remove: Array<Line>, add: Array<Line>) {
+    const removedLine = remove.pop();
+    if(removedLine) {
+        add.push(removedLine); 
         canvas.dispatchEvent(drawEvent);
     }
-})
+}
 
-redoBut.addEventListener("click", () => {
-    const redo = redoLines.pop();
-    if(redo) {
-        lines.push(redo);
-        canvas.dispatchEvent(drawEvent);
-    }
-})
-
-thin.addEventListener("click", () => {
-    strokeSize = 1;
-    changeClass(thin);
+function size(newSize: HTMLButtonElement, oldSize: HTMLButtonElement, size: number) {
+    strokeSize = size;
+    changeClass(newSize);
     if (emojiBut) {
         changeClass(emojiBut);
         emojiBut = null;
     } else {
-        changeClass(thick);
+        changeClass(oldSize);
     }
-})
-
-thick.addEventListener("click", () => {
-    strokeSize = 3;
-    changeClass(thick);
-    if (emojiBut) {
-        changeClass(emojiBut);
-        emojiBut = null;
-    } else {
-        changeClass(thin);
-    }
-})
+}
 
 customEmo.addEventListener("click", () => {
     const sticker = prompt("Custom stamp", "❤️");
     if(sticker) {
         const newButton = document.createElement("button");
-        createButtons(newButton, sticker, true);
-        newButton.addEventListener("click", () => stamp(newButton));
+        createButtons(newButton, sticker, true, stamp);
     }
     
 })
