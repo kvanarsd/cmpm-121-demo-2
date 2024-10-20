@@ -88,6 +88,11 @@ canvas {
   filter: drop-shadow(4px 4px 5px #000);
   cursor: none;
 }
+.column {
+  display: flex;
+  flex: 0.5;
+  flex-direction: column;
+}
 
 @media (prefers-color-scheme: light) {
   :root {

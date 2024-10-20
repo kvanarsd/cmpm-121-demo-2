@@ -1,24 +1,40 @@
 import "./style.css";
 
-const APP_NAME = "Hello I'm katrina";
+const APP_NAME = "Paint";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 document.title = APP_NAME;
-app.innerHTML = APP_NAME;
 
-const header = document.createElement("h1");
-header.innerHTML = "Demo 2";
+const header = document.createElement("h2");
+header.innerHTML = APP_NAME;
 app.append(header);
+
+const container = document.createElement("div");
+container.style.display = "flex";
+container.style.justifyContent = "space-between";
+container.style.margin = "20px";
+
+app.append(container);
+const settings = document.createElement("div");
+settings.className = "column";
+container.append(settings);
+const canvasCol = document.createElement("div");
+container.append(canvasCol);
+canvasCol.className = "column";
+canvasCol.style.flex = "1";
+const brushSettings = document.createElement("div");
+brushSettings.className = "column";
+container.append(brushSettings);
 
 const canvas = document.createElement("canvas");
 canvas.width = 256;
 canvas.height = 256;
+canvasCol.append(canvas);
 
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;;
 ctx.fillStyle = "white";
 ctx.fillRect(0,0, 256, 256);
 ctx.font = "32px monospace";
-app.append(canvas);
 
 const clearBut = document.createElement("button");
 createButtons(clearBut, "Clear", false);
@@ -26,6 +42,7 @@ const undoBut = document.createElement("button");
 createButtons(undoBut, "Undo", false);
 const redoBut = document.createElement("button");
 createButtons(redoBut, "Redo", false);
+
 const thin = document.createElement("button");
 createButtons(thin, "Thin", true);
 thin.className = "selected"
@@ -195,7 +212,11 @@ canvas.addEventListener("tool-moved", function() {
 // button functions -----------------------------------------
 function createButtons(button: HTMLButtonElement, value: string, brush: boolean) {
     button.innerHTML = value;
-    app.append(button);
+    if(!brush) {
+        settings.appendChild(button);
+    } else {
+        brushSettings.appendChild(button);
+    }
     if(button.innerHTML != "Thin" && brush) {
         button.className = "not-selected";
     }
