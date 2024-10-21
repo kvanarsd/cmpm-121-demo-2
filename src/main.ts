@@ -63,6 +63,52 @@ createButtons(emoji3, "💋", true, stamp);
 const customEmo = document.createElement("button");
 createButtons(customEmo, "Create Stamp", false);
 
+const slideCon = document.createElement("div");
+slideCon.className = "sliderContainer";
+const slider = document.createElement("input");
+slider.type = "range";
+slider.min = "0";
+slider.max = "1530";
+slider.value = "0";
+slider.className = "slider";
+slider.style.setProperty('--thumb-color', "rgb(255,0,0)");
+app.append(slideCon);
+slideCon.append(slider);
+
+let r: number = 255;
+let g: number = 0;
+let b: number = 0;
+slider.oninput = function() {
+    const val = Number(slider.value);
+    if(val < 255) {
+        r = 255;
+        g = val;
+        b = 0;
+    } else if (val < 510) {
+        r = 510 - val;
+        g = 255;
+        b = 0;
+    } else if (val < 765) {
+        r = 0;
+        g = 255;
+        b = val - 510; 
+    } else if (val < 1020) {
+        r = 0;
+        g = 1020 - val; 
+        b = 255;
+    } else if (val < 1275) {
+        r = val - 1020;
+        g = 0;
+        b = 255;
+    } else {
+        r = 255;
+        g = 0;
+        b = 1530 - val; 
+    }
+    color = `rgb(${r},${g},${b})`;
+    slider.style.setProperty('--thumb-color', color);
+  }
+
 // functions ----------------------------------------------------------------
 let isDrawing = false; 
 const lines: mark[] = [];
@@ -75,6 +121,7 @@ let cursor: Cursor | null;
 let emojiBut: HTMLButtonElement | null;
 let curEmoji: placedStamp | null;
 let initialPos: {x: number, y: number};
+let color = "rgb(255,0,0)";
 
 interface mark {
     line: Line | undefined;
@@ -97,10 +144,12 @@ interface Cursor {
 class Line {
     private points: { x: number; y: number; }[] = [];
     private stroke: number;
+    private stokeColor: string;
 
     constructor(startX: number, startY: number) {
         this.points.push({x: startX, y: startY});
         this.stroke = strokeSize;
+        this.stokeColor = color;
     }
 
     mouseMove(x: number, y: number) {
@@ -109,7 +158,7 @@ class Line {
 
     display(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = this.stokeColor;
         ctx.lineWidth = this.stroke;
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
