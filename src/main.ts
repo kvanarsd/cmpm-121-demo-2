@@ -363,3 +363,4 @@ function exportCanvas() {
     anchor.download = "sketchpad.png";
     anchor.click();
 }
+//
