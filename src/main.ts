@@ -118,14 +118,14 @@ const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 let strokeSize = 2;
 let cursor: Cursor | null;
-let emojiBut: HTMLButtonElement | null;
-let curEmoji: placedStamp | null;
-let initialPos: {x: number, y: number};
+let emojiButton: HTMLButtonElement | null;
+let currentEmoji: placedStamp | null;
+let initialPosition: {x: number, y: number};
 let color = "rgb(255,0,0)";
 
 interface mark {
-    line: Line | undefined;
-    stamp: placedStamp | undefined;
+    lineObject: Line | undefined;
+    stampObject: placedStamp | undefined;
 }
 
 interface placedStamp {
@@ -175,13 +175,13 @@ canvas.addEventListener("mousedown", (pos) => {
     isDrawing = true;
     redoLines.splice(0, redoLines.length);
 
-    if (emojiBut) {
-        curEmoji = {shape: emojiBut.innerHTML, x: pos.offsetX, y: pos.offsetY, rotation: 0}
-        lines.push({line: undefined, stamp: curEmoji});
-        initialPos = {x: pos.offsetX, y: pos.offsetY};
+    if (emojiButton) {
+        currentEmoji = {shape: emojiButton.innerHTML, x: pos.offsetX, y: pos.offsetY, rotation: 0}
+        lines.push({lineObject: undefined, stampObject: currentEmoji});
+        initialPosition = {x: pos.offsetX, y: pos.offsetY};
     } else {
         currentLine = new Line(pos.offsetX, pos.offsetY);
-        lines.push({line: currentLine, stamp: undefined});
+        lines.push({lineObject: currentLine, stampObject: undefined});
     }
 });
 
@@ -190,11 +190,11 @@ canvas.addEventListener("mousemove", (pos) => {
         if (currentLine) {
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
         }
-        if (emojiBut && curEmoji) { 
-            const dx = pos.offsetX - initialPos.x;
-            const dy = pos.offsetY - initialPos.y;
+        if (emojiButton && currentEmoji) { 
+            const dx = pos.offsetX - initialPosition.x;
+            const dy = pos.offsetY - initialPosition.y;
             const angle = Math.atan2(dy, dx);
-            curEmoji.rotation = angle;
+            currentEmoji.rotation = angle;
         }
         canvas.dispatchEvent(drawEvent);
     } else if(cursor) {
@@ -229,8 +229,8 @@ canvas.addEventListener("mouseenter", () => {
 });
 
 function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
-    if(emojiBut) {
-        cursor.shape = emojiBut.innerHTML;
+    if(emojiButton) {
+        cursor.shape = emojiButton.innerHTML;
     } else {
         cursor.shape = "*"
     }
@@ -243,16 +243,16 @@ function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
 function drawCanvasContent(ctxCan: CanvasRenderingContext2D) {
     ctxCan.fillStyle = 'white';
     ctxCan.fillRect(0,0, 400, 400);
-    for (const {line, stamp} of lines) {
-        if(line) {
-            line.display(ctxCan);
+    for (const {lineObject, stampObject} of lines) {
+        if(lineObject) {
+            lineObject.display(ctxCan);
         }
-        if(stamp) {
+        if(stampObject) {
             ctxCan.save();
-            ctxCan.translate(stamp.x, stamp.y); 
-            ctxCan.rotate(stamp.rotation || 0); 
+            ctxCan.translate(stampObject.x, stampObject.y); 
+            ctxCan.rotate(stampObject.rotation || 0); 
             ctxCan.fillStyle = 'black';
-            ctxCan.fillText(stamp.shape, -8,16);
+            ctxCan.fillText(stampObject.shape, -8,16);
             ctxCan.restore();
         }
     }
@@ -290,10 +290,10 @@ function createButtons(button: HTMLButtonElement, value: string, brush: boolean,
 }
 
 function stamp(button: HTMLButtonElement) {
-    if(emojiBut) {
-        changeClass(emojiBut);
+    if(emojiButton) {
+        changeClass(emojiButton);
     }
-    emojiBut = button;
+    emojiButton = button;
     changeClass(button);
     if (thin.className == "selected") {
         changeClass(thin);
@@ -327,12 +327,12 @@ function undoRedo(remove: Array<mark>, add: Array<mark>) {
 }
 
 function size(newSize: HTMLButtonElement, oldSize: HTMLButtonElement, size: number) {
-    if(strokeSize != size || emojiBut) {
+    if(strokeSize != size || emojiButton) {
         strokeSize = size;
         changeClass(newSize);
-        if (emojiBut) {
-            changeClass(emojiBut);
-            emojiBut = null;
+        if (emojiButton) {
+            changeClass(emojiButton);
+            emojiButton = null;
         } else {
             changeClass(oldSize);
         }
@@ -363,4 +363,3 @@ function exportCanvas() {
     anchor.download = "sketchpad.png";
     anchor.click();
 }
-//
