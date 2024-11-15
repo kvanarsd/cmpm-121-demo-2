@@ -45,7 +45,32 @@ createButton(undoBut, "Undo", false, () => undoRedo(lines, redoLines));
 const redoBut = document.createElement("button");
 createButton(redoBut, "Redo", false, () => undoRedo(redoLines, lines));
 const exportCan = document.createElement("button");
-createButton(exportCan, "Export", false, exportCanvas);
+createButton(exportCan, "Export", false, () => exportDialog.showModal());
+
+// export button
+const exportDialog = document.getElementById(
+  "exportDialog"
+) as HTMLDialogElement;
+const transparentButton = document.getElementById(
+  "transparent"
+) as HTMLButtonElement;
+const closeDialogButton = document.getElementById(
+  "closeDialog"
+) as HTMLButtonElement;
+
+const opaqueButton = document.getElementById("opaque") as HTMLButtonElement;
+
+transparentButton.addEventListener("click", () => {
+  exportCanvas(true);
+});
+
+opaqueButton.addEventListener("click", () => {
+  exportCanvas(false);
+});
+
+closeDialogButton.addEventListener("click", () => {
+  exportDialog.close();
+});
 
 const thin = document.createElement("button");
 createButton(thin, "Thin", true, () => size(thin, thick, 2));
@@ -341,14 +366,31 @@ function customEmoji() {
   }
 }
 
-function exportCanvas() {
+function exportCanvas(transparent: boolean) {
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = 1200;
   tempCanvas.height = 1200;
   const tempCtx = tempCanvas.getContext("2d") as CanvasRenderingContext2D;
+  if (!transparent) {
+    tempCtx.fillStyle = "white";
+    tempCtx.fillRect(0, 0, 400, 400);
+  }
   tempCtx.scale(3, 3);
   tempCtx.font = "32px monospace";
-  drawCanvasContent(tempCtx);
+
+  for (const { lineObject, stampObject } of lines) {
+    if (lineObject) {
+      lineObject.display(tempCtx);
+    }
+    if (stampObject) {
+      tempCtx.save();
+      tempCtx.translate(stampObject.x, stampObject.y);
+      tempCtx.rotate(stampObject.rotation || 0);
+      tempCtx.fillStyle = "black";
+      tempCtx.fillText(stampObject.shape, -8, 16);
+      tempCtx.restore();
+    }
+  }
 
   const anchor = document.createElement("a");
   anchor.href = tempCanvas.toDataURL("image/png");

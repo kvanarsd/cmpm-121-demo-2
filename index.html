@@ -6,6 +6,19 @@
   </head>
   <body>
     <div id="app"></div>
+    <!-- Modal Dialog -->
+    <dialog id="exportDialog">
+      <form method="dialog">
+        <div>
+          <button id="closeDialog" type="button">X</button>
+        </div>
+        <p>Do you want the background to be transparent?</p>
+        <menu>
+          <button id="transparent">Yes</button>
+          <button id="opaque">No</button>
+        </menu>
+      </form>
+    </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
